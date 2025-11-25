@@ -67,7 +67,7 @@ function App() {
   };
 
   return (
-    <div className="w-full h-screen bg-brand-dark text-white overflow-hidden font-sans">
+    <div className="w-full h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white overflow-hidden font-sans">
       {gameState === 'start' && (
         <StartScreen 
           onStart={handleStart} 
@@ -84,11 +84,11 @@ function App() {
         <ResultsScreen metrics={metrics} onRestart={handleRestart} />
       )}
       {gameState === 'analytics' && (
-        <div className="w-full h-screen overflow-auto">
-          <div className="p-4 bg-brand-dark border-b border-gray-700 flex justify-between items-center">
+        <div className="w-full h-screen overflow-auto bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+          <div className="p-4 bg-slate-800/50 backdrop-blur-sm border-b border-cyan-500/30 flex justify-between items-center">
             <button
               onClick={() => setGameState('start')}
-              className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600"
+              className="px-4 py-2 bg-slate-700/50 hover:bg-slate-600/50 text-white rounded-xl transition-all border border-cyan-500/30 hover:border-cyan-400/50"
             >
               ← Back to Menu
             </button>
@@ -97,13 +97,13 @@ function App() {
         </div>
       )}
       {gameState === 'history' && (
-        <div className="w-full h-screen overflow-auto p-8">
+        <div className="w-full h-screen overflow-auto p-8 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
           <div className="max-w-6xl mx-auto">
             <div className="mb-6 flex justify-between items-center">
-              <h2 className="text-3xl font-bold">Session History</h2>
+              <h2 className="text-4xl font-bold bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">Session History</h2>
               <button
                 onClick={() => setGameState('start')}
-                className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600"
+                className="px-4 py-2 bg-slate-700/50 hover:bg-slate-600/50 text-white rounded-xl transition-all border border-cyan-500/30 hover:border-cyan-400/50"
               >
                 ← Back to Menu
               </button>

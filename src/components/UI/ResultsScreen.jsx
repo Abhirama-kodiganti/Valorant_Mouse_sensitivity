@@ -59,11 +59,11 @@ const ResultsScreen = ({ metrics, onRestart }) => {
 
     if (showAnalytics) {
         return (
-            <div className="w-full h-screen overflow-auto">
-                <div className="p-4 bg-brand-dark border-b border-gray-700 flex justify-between items-center">
+            <div className="w-full h-screen overflow-auto bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900">
+                <div className="p-4 bg-slate-800/50 backdrop-blur-sm border-b border-cyan-500/30 flex justify-between items-center">
                     <button
                         onClick={() => setShowAnalytics(false)}
-                        className="px-4 py-2 bg-gray-700 text-white rounded hover:bg-gray-600"
+                        className="px-4 py-2 bg-slate-700/50 hover:bg-slate-600/50 text-white rounded-xl transition-all border border-cyan-500/30 hover:border-cyan-400/50"
                     >
                         ← Back to Results
                     </button>
@@ -74,55 +74,76 @@ const ResultsScreen = ({ metrics, onRestart }) => {
     }
 
     return (
-        <div className="flex flex-col items-center justify-center h-full space-y-8 w-full max-w-6xl mx-auto p-8 overflow-auto">
-            <h2 className="text-4xl font-bold text-white">Analysis Complete</h2>
+        <div className="flex flex-col items-center justify-center min-h-screen bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 p-8 overflow-auto">
+            <div className="w-full max-w-6xl space-y-8 animate-fadeIn">
+                <div className="text-center mb-8">
+                    <h2 className="text-5xl font-bold mb-2 bg-gradient-to-r from-cyan-400 via-blue-400 to-cyan-400 bg-clip-text text-transparent animate-gradient">
+                        Analysis Complete
+                    </h2>
+                    <p className="text-gray-400">Your performance breakdown</p>
+                </div>
 
-            {/* Key Metrics */}
-            <div className="grid grid-cols-3 gap-6 w-full">
-                <div className="bg-brand-surface p-6 rounded border border-gray-700">
-                    <p className="text-gray-400">Accuracy</p>
-                    <p className="text-3xl font-bold text-brand-accent">
-                        {((metrics.hits / metrics.shots) * 100).toFixed(1)}%
-                    </p>
-                </div>
-                <div className="bg-brand-surface p-6 rounded border border-gray-700">
-                    <p className="text-gray-400">Avg Reaction</p>
-                    <p className="text-3xl font-bold text-brand-accent">
-                        {Math.round(metrics.avgReactionTime)} ms
-                    </p>
-                </div>
-                <div className="bg-brand-surface p-6 rounded border border-gray-700">
-                    <p className="text-gray-400">Overshoot Rate</p>
-                    <p className="text-3xl font-bold text-brand-accent">
-                        {(metrics.overshootRate * 100).toFixed(1)}%
-                    </p>
-                </div>
-            </div>
-
-            {/* Recommended Sensitivity Range */}
-            <div className="bg-brand-surface p-8 rounded w-full border border-brand-accent">
-                <h3 className="text-2xl font-bold text-white mb-4">Recommended Sensitivity Range</h3>
-                <div className="flex justify-between items-center">
-                    <div className="text-center">
-                        <p className="text-gray-400">Control</p>
-                        <p className="text-2xl font-bold text-brand-accent">{rec.low}</p>
+                {/* Key Metrics */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="bg-gradient-to-br from-cyan-500/20 to-blue-500/20 backdrop-blur-sm p-6 rounded-2xl border-2 border-cyan-500/30 shadow-xl transform hover:scale-105 transition-all">
+                        <div className="flex items-center gap-3 mb-2">
+                            <span className="text-3xl">🎯</span>
+                            <p className="text-gray-300 font-semibold">Accuracy</p>
+                        </div>
+                        <p className="text-4xl font-bold text-cyan-400">
+                            {((metrics.hits / metrics.shots) * 100).toFixed(1)}%
+                        </p>
                     </div>
-                    <div className="text-center">
-                        <p className="text-gray-400">Current</p>
-                        <p className="text-xl font-bold text-white">{metrics.config.sensitivity}</p>
+                    <div className="bg-gradient-to-br from-blue-500/20 to-purple-500/20 backdrop-blur-sm p-6 rounded-2xl border-2 border-blue-500/30 shadow-xl transform hover:scale-105 transition-all">
+                        <div className="flex items-center gap-3 mb-2">
+                            <span className="text-3xl">⚡</span>
+                            <p className="text-gray-300 font-semibold">Avg Reaction</p>
+                        </div>
+                        <p className="text-4xl font-bold text-blue-400">
+                            {Math.round(metrics.avgReactionTime)} ms
+                        </p>
                     </div>
-                    <div className="text-center">
-                        <p className="text-gray-400">Speed</p>
-                        <p className="text-2xl font-bold text-brand-accent">{rec.high}</p>
+                    <div className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 backdrop-blur-sm p-6 rounded-2xl border-2 border-purple-500/30 shadow-xl transform hover:scale-105 transition-all">
+                        <div className="flex items-center gap-3 mb-2">
+                            <span className="text-3xl">📊</span>
+                            <p className="text-gray-300 font-semibold">Overshoot Rate</p>
+                        </div>
+                        <p className="text-4xl font-bold text-purple-400">
+                            {(metrics.overshootRate * 100).toFixed(1)}%
+                        </p>
                     </div>
                 </div>
-            </div>
 
-            {/* AI Feedback */}
-            {rec.feedback && rec.feedback.length > 0 && (
-                <div className="bg-brand-surface p-6 rounded w-full border border-gray-700">
-                    <h3 className="text-xl font-bold text-white mb-4">AI Analysis & Recommendations</h3>
-                    <div className="space-y-3">
+                {/* Recommended Sensitivity Range */}
+                <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm p-8 rounded-2xl w-full border-2 border-cyan-500/30 shadow-2xl">
+                    <h3 className="text-2xl font-bold text-cyan-300 mb-6 flex items-center gap-2">
+                        <span>🎚️</span>
+                        Recommended Sensitivity Range
+                    </h3>
+                    <div className="flex justify-between items-center gap-4">
+                        <div className="flex-1 text-center p-4 bg-slate-900/30 rounded-xl border border-cyan-500/20">
+                            <p className="text-gray-400 text-sm mb-2">Control</p>
+                            <p className="text-3xl font-bold text-cyan-400">{rec.low}</p>
+                        </div>
+                        <div className="flex-1 text-center p-4 bg-gradient-to-br from-cyan-500/20 to-blue-500/20 rounded-xl border-2 border-cyan-400/50">
+                            <p className="text-gray-300 text-sm mb-2">Current</p>
+                            <p className="text-2xl font-bold text-white">{metrics.config.sensitivity}</p>
+                        </div>
+                        <div className="flex-1 text-center p-4 bg-slate-900/30 rounded-xl border border-cyan-500/20">
+                            <p className="text-gray-400 text-sm mb-2">Speed</p>
+                            <p className="text-3xl font-bold text-blue-400">{rec.high}</p>
+                        </div>
+                    </div>
+                </div>
+
+                {/* AI Feedback */}
+                {rec.feedback && rec.feedback.length > 0 && (
+                    <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm p-6 rounded-2xl w-full border border-cyan-500/30 shadow-xl">
+                        <h3 className="text-xl font-bold text-cyan-300 mb-4 flex items-center gap-2">
+                            <span>🤖</span>
+                            AI Analysis & Recommendations
+                        </h3>
+                        <div className="space-y-3">
                         {rec.feedback.map((fb, idx) => (
                             <div
                                 key={idx}
@@ -139,14 +160,17 @@ const ResultsScreen = ({ metrics, onRestart }) => {
                                 <p className="text-white">{fb.message}</p>
                             </div>
                         ))}
+                        </div>
                     </div>
-                </div>
-            )}
+                )}
 
-            {/* Game Sensitivity Conversions */}
-            <div className="bg-brand-surface p-6 rounded w-full border border-gray-700">
-                <h3 className="text-xl font-bold text-white mb-4">Apply to Game</h3>
-                <div className="mb-4">
+                {/* Game Sensitivity Conversions */}
+                <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm p-6 rounded-2xl w-full border border-cyan-500/30 shadow-xl">
+                    <h3 className="text-xl font-bold text-cyan-300 mb-4 flex items-center gap-2">
+                        <span>🎮</span>
+                        Apply to Game
+                    </h3>
+                    <div className="mb-4">
                     <label className="text-gray-400 text-sm mb-2 block">Select Game:</label>
                     <select
                         value={selectedGame}
@@ -159,8 +183,8 @@ const ResultsScreen = ({ metrics, onRestart }) => {
                         <option value="fortnite">Fortnite</option>
                         <option value="overwatch">Overwatch</option>
                     </select>
-                </div>
-                <div className="grid grid-cols-2 gap-4">
+                    </div>
+                    <div className="grid grid-cols-2 gap-4">
                     <div className="bg-brand-dark p-4 rounded">
                         <p className="text-gray-400 text-sm">Recommended Sensitivity</p>
                         <p className="text-2xl font-bold text-brand-accent">
@@ -175,19 +199,22 @@ const ResultsScreen = ({ metrics, onRestart }) => {
                         </p>
                         <p className="text-gray-500 text-xs mt-1">High range</p>
                     </div>
+                    </div>
+                    <div className="mt-4 p-3 bg-slate-900/30 rounded-xl border border-cyan-500/20">
+                        <p className="text-gray-400 text-sm">{gameSettings.notes}</p>
+                        <p className="text-white text-sm mt-1">
+                            cm/360°: {gameSettings.cmPer360} cm
+                        </p>
+                    </div>
                 </div>
-                <div className="mt-4 p-3 bg-brand-dark rounded">
-                    <p className="text-gray-400 text-sm">{gameSettings.notes}</p>
-                    <p className="text-white text-sm mt-1">
-                        cm/360°: {gameSettings.cmPer360} cm
-                    </p>
-                </div>
-            </div>
 
-            {/* Adaptive Training Suggestion */}
-            <div className="bg-brand-surface p-6 rounded w-full border border-gray-700">
-                <h3 className="text-xl font-bold text-white mb-4">Next Training Mode</h3>
-                <div className="flex items-center justify-between">
+                {/* Adaptive Training Suggestion */}
+                <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm p-6 rounded-2xl w-full border border-cyan-500/30 shadow-xl">
+                    <h3 className="text-xl font-bold text-cyan-300 mb-4 flex items-center gap-2">
+                        <span>📈</span>
+                        Next Training Mode
+                    </h3>
+                    <div className="flex items-center justify-between">
                     <div>
                         <p className="text-white font-semibold capitalize">{nextMode.mode}</p>
                         <p className="text-gray-400 text-sm mt-1">{nextMode.reason}</p>
@@ -197,39 +224,52 @@ const ResultsScreen = ({ metrics, onRestart }) => {
                             const newConfig = { ...metrics.config, mode: nextMode.mode };
                             onRestart(newConfig);
                         }}
-                        className="px-6 py-2 bg-brand-accent text-brand-dark font-bold rounded hover:bg-white transition-colors"
+                        className="px-6 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-bold rounded-xl transition-all transform hover:scale-105 shadow-lg shadow-cyan-500/50"
                     >
                         Start {nextMode.mode}
                     </button>
+                    </div>
                 </div>
-            </div>
 
-            {/* Action Buttons */}
-            <div className="flex gap-4 w-full">
-                <button
-                    onClick={() => setShowAnalytics(true)}
-                    className="flex-1 px-6 py-3 bg-gray-700 text-white font-bold rounded hover:bg-gray-600 transition-colors"
-                >
-                    View Analytics
-                </button>
-                <button
-                    onClick={handleExport}
-                    className="flex-1 px-6 py-3 bg-gray-700 text-white font-bold rounded hover:bg-gray-600 transition-colors"
-                >
-                    Export Settings
-                </button>
-                <button
-                    onClick={handleShare}
-                    className="flex-1 px-6 py-3 bg-gray-700 text-white font-bold rounded hover:bg-gray-600 transition-colors"
-                >
-                    Share Results
-                </button>
-                <button
-                    onClick={onRestart}
-                    className="flex-1 px-6 py-3 bg-brand-accent text-brand-dark font-bold rounded hover:bg-white transition-colors"
-                >
-                    Return to Menu
-                </button>
+                {/* Action Buttons */}
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <button
+                        onClick={() => setShowAnalytics(true)}
+                        className="px-6 py-4 bg-slate-800/50 backdrop-blur-sm hover:bg-slate-700/50 text-white font-bold rounded-xl transition-all transform hover:scale-105 border border-cyan-500/30 hover:border-cyan-400/50 shadow-lg"
+                    >
+                        <span className="flex flex-col items-center gap-1">
+                            <span className="text-xl">📊</span>
+                            <span className="text-sm">Analytics</span>
+                        </span>
+                    </button>
+                    <button
+                        onClick={handleExport}
+                        className="px-6 py-4 bg-slate-800/50 backdrop-blur-sm hover:bg-slate-700/50 text-white font-bold rounded-xl transition-all transform hover:scale-105 border border-cyan-500/30 hover:border-cyan-400/50 shadow-lg"
+                    >
+                        <span className="flex flex-col items-center gap-1">
+                            <span className="text-xl">💾</span>
+                            <span className="text-sm">Export</span>
+                        </span>
+                    </button>
+                    <button
+                        onClick={handleShare}
+                        className="px-6 py-4 bg-slate-800/50 backdrop-blur-sm hover:bg-slate-700/50 text-white font-bold rounded-xl transition-all transform hover:scale-105 border border-cyan-500/30 hover:border-cyan-400/50 shadow-lg"
+                    >
+                        <span className="flex flex-col items-center gap-1">
+                            <span className="text-xl">🔗</span>
+                            <span className="text-sm">Share</span>
+                        </span>
+                    </button>
+                    <button
+                        onClick={onRestart}
+                        className="px-6 py-4 bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-400 hover:to-blue-400 text-white font-bold rounded-xl transition-all transform hover:scale-105 shadow-lg shadow-cyan-500/50"
+                    >
+                        <span className="flex flex-col items-center gap-1">
+                            <span className="text-xl">🏠</span>
+                            <span className="text-sm">Menu</span>
+                        </span>
+                    </button>
+                </div>
             </div>
         </div>
     );

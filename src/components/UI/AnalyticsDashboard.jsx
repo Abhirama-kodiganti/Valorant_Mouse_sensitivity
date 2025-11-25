@@ -23,6 +23,7 @@ export default function AnalyticsDashboard({ sessionData = null }) {
 
     // Compute chart data from session history
     const computeHistoryData = () => {
+        if (sessions.length === 0) return [];
         const labels = sessions.map((s, idx) => idx + 1);
         const accuracy = sessions.map(s => s.shots ? (s.hits / s.shots) * 100 : 0);
         const reaction = sessions.map(s => s.avgReactionTime || 0);
@@ -38,7 +39,7 @@ export default function AnalyticsDashboard({ sessionData = null }) {
 
     // Reaction time distribution
     const computeReactionTimeDistribution = () => {
-        if (!selectedSession || !selectedSession.reactionTimes) return [];
+        if (!selectedSession || !selectedSession.reactionTimes || selectedSession.reactionTimes.length === 0) return [];
         
         const bins = [0, 100, 150, 200, 250, 300, 400, 500, 1000];
         const distribution = bins.slice(0, -1).map((min, idx) => {
@@ -55,7 +56,7 @@ export default function AnalyticsDashboard({ sessionData = null }) {
 
     // Accuracy decay over time
     const computeAccuracyDecay = () => {
-        if (!selectedSession || !selectedSession.accuracyOverTime) return [];
+        if (!selectedSession || !selectedSession.accuracyOverTime || selectedSession.accuracyOverTime.length === 0) return [];
         
         return selectedSession.accuracyOverTime.map((acc, idx) => ({
             time: idx,
@@ -65,7 +66,7 @@ export default function AnalyticsDashboard({ sessionData = null }) {
 
     // Distance to target scatter
     const computeDistanceScatter = () => {
-        if (!selectedSession || !selectedSession.distanceToTarget) return [];
+        if (!selectedSession || !selectedSession.distanceToTarget || selectedSession.distanceToTarget.length === 0) return [];
         
         return selectedSession.distanceToTarget.map((d, idx) => ({
             distance: d.distance,
@@ -122,16 +123,10 @@ export default function AnalyticsDashboard({ sessionData = null }) {
             ctx.fillStyle = `rgba(56, 189, 248, ${alpha})`;
             ctx.fillRect(gx * gridSize, gy * gridSize, gridSize, gridSize);
         });
-        
-        // Draw targets if available
-        if (selectedSession.config) {
-            ctx.fillStyle = 'rgba(255, 255, 255, 0.3)';
-            // This would need target positions from session data
-        }
     };
 
     useEffect(() => {
-        if (selectedSession) {
+        if (selectedSession && selectedSession.movementPath) {
             renderHeatmap();
         }
     }, [selectedSession]);
@@ -143,18 +138,37 @@ export default function AnalyticsDashboard({ sessionData = null }) {
 
     const COLORS = ['#38bdf8', '#0ea5e9', '#0284c7', '#0369a1'];
 
+    if (sessions.length === 0 && !sessionData) {
+        return (
+            <div className="p-6 bg-brand-dark text-white min-h-screen flex items-center justify-center">
+                <div className="text-center">
+                    <div className="text-6xl mb-4">📊</div>
+                    <h2 className="text-3xl font-bold mb-4">No Analytics Data</h2>
+                    <p className="text-gray-400">Complete a training session to see analytics here.</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
-        <div className="p-6 bg-brand-dark text-white min-h-screen">
-            <h2 className="text-3xl font-bold mb-6">Analytics Dashboard</h2>
+        <div className="p-6 bg-gradient-to-br from-slate-900 via-blue-900 to-slate-900 text-white min-h-screen">
+            <h2 className="text-4xl font-bold mb-6 bg-gradient-to-r from-cyan-400 to-blue-400 bg-clip-text text-transparent">
+                Analytics Dashboard
+            </h2>
             
             {/* Session Selector */}
             {sessions.length > 0 && (
                 <div className="mb-6">
-                    <label className="text-gray-400 text-sm mb-2 block">Select Session:</label>
+                    <label className="text-gray-300 text-sm mb-2 block">Select Session:</label>
                     <select
-                        value={sessions.indexOf(selectedSession)}
-                        onChange={(e) => setSelectedSession(sessions[parseInt(e.target.value)])}
-                        className="bg-brand-surface text-white p-2 rounded border border-gray-700"
+                        value={selectedSession ? sessions.indexOf(selectedSession) : 0}
+                        onChange={(e) => {
+                            const idx = parseInt(e.target.value);
+                            if (idx >= 0 && idx < sessions.length) {
+                                setSelectedSession(sessions[idx]);
+                            }
+                        }}
+                        className="bg-slate-800/50 backdrop-blur-sm text-white p-3 rounded-lg border border-cyan-500/30 focus:border-cyan-400 focus:outline-none focus:ring-2 focus:ring-cyan-400/50 transition-all"
                     >
                         {sessions.map((s, idx) => (
                             <option key={idx} value={idx}>
@@ -167,50 +181,70 @@ export default function AnalyticsDashboard({ sessionData = null }) {
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 {/* Movement Heatmap */}
-                <div className="bg-brand-surface p-4 rounded border border-gray-700">
-                    <h3 className="text-xl font-semibold mb-4">Movement Heatmap</h3>
+                <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm p-6 rounded-xl border border-cyan-500/20 shadow-xl">
+                    <h3 className="text-xl font-semibold mb-4 text-cyan-300">Movement Heatmap</h3>
                     <canvas
                         ref={canvasRef}
                         width={600}
                         height={400}
-                        className="w-full h-64 bg-brand-dark rounded"
+                        className="w-full h-64 bg-slate-900/50 rounded-lg border border-cyan-500/10"
                     />
-                    <p className="text-gray-400 text-sm mt-2">
+                    <p className="text-gray-400 text-sm mt-3">
                         Shows mouse movement density during session
                     </p>
                 </div>
 
                 {/* Accuracy Over Time */}
-                <div className="bg-brand-surface p-4 rounded border border-gray-700">
-                    <h3 className="text-xl font-semibold mb-4">Accuracy Over Time</h3>
+                <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm p-6 rounded-xl border border-cyan-500/20 shadow-xl">
+                    <h3 className="text-xl font-semibold mb-4 text-cyan-300">Accuracy Over Time</h3>
                     {accuracyDecay.length > 0 ? (
                         <ResponsiveContainer width="100%" height={250}>
                             <LineChart data={accuracyDecay}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                                <XAxis dataKey="time" stroke="#9ca3af" />
-                                <YAxis stroke="#9ca3af" domain={[0, 100]} />
-                                <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #374151' }} />
-                                <Line type="monotone" dataKey="accuracy" stroke="#38bdf8" strokeWidth={2} />
+                                <CartesianGrid strokeDasharray="3 3" stroke="#1e3a5f" />
+                                <XAxis dataKey="time" stroke="#94a3b8" />
+                                <YAxis stroke="#94a3b8" domain={[0, 100]} />
+                                <Tooltip 
+                                    contentStyle={{ 
+                                        backgroundColor: '#1e293b', 
+                                        border: '1px solid #38bdf8',
+                                        borderRadius: '8px',
+                                        color: '#fff'
+                                    }} 
+                                />
+                                <Line 
+                                    type="monotone" 
+                                    dataKey="accuracy" 
+                                    stroke="#38bdf8" 
+                                    strokeWidth={3}
+                                    dot={{ fill: '#38bdf8', r: 4 }}
+                                    activeDot={{ r: 6 }}
+                                />
                             </LineChart>
                         </ResponsiveContainer>
                     ) : (
-                        <div className="h-64 flex items-center justify-center text-gray-400">
+                        <div className="h-64 flex items-center justify-center text-gray-400 bg-slate-900/30 rounded-lg">
                             No accuracy over time data available
                         </div>
                     )}
                 </div>
 
                 {/* Reaction Time Distribution */}
-                <div className="bg-brand-surface p-4 rounded border border-gray-700">
-                    <h3 className="text-xl font-semibold mb-4">Reaction Time Distribution</h3>
+                <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm p-6 rounded-xl border border-cyan-500/20 shadow-xl">
+                    <h3 className="text-xl font-semibold mb-4 text-cyan-300">Reaction Time Distribution</h3>
                     {reactionDist.length > 0 ? (
                         <ResponsiveContainer width="100%" height={250}>
                             <BarChart data={reactionDist}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                                <XAxis dataKey="range" stroke="#9ca3af" />
-                                <YAxis stroke="#9ca3af" />
-                                <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #374151' }} />
-                                <Bar dataKey="count" fill="#38bdf8">
+                                <CartesianGrid strokeDasharray="3 3" stroke="#1e3a5f" />
+                                <XAxis dataKey="range" stroke="#94a3b8" />
+                                <YAxis stroke="#94a3b8" />
+                                <Tooltip 
+                                    contentStyle={{ 
+                                        backgroundColor: '#1e293b', 
+                                        border: '1px solid #38bdf8',
+                                        borderRadius: '8px'
+                                    }} 
+                                />
+                                <Bar dataKey="count" fill="#38bdf8" radius={[8, 8, 0, 0]}>
                                     {reactionDist.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                                     ))}
@@ -218,22 +252,29 @@ export default function AnalyticsDashboard({ sessionData = null }) {
                             </BarChart>
                         </ResponsiveContainer>
                     ) : (
-                        <div className="h-64 flex items-center justify-center text-gray-400">
+                        <div className="h-64 flex items-center justify-center text-gray-400 bg-slate-900/30 rounded-lg">
                             No reaction time data available
                         </div>
                     )}
                 </div>
 
                 {/* Distance to Target Scatter */}
-                <div className="bg-brand-surface p-4 rounded border border-gray-700">
-                    <h3 className="text-xl font-semibold mb-4">Distance to Target Analysis</h3>
+                <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm p-6 rounded-xl border border-cyan-500/20 shadow-xl">
+                    <h3 className="text-xl font-semibold mb-4 text-cyan-300">Distance to Target Analysis</h3>
                     {distanceScatter.length > 0 ? (
                         <ResponsiveContainer width="100%" height={250}>
                             <ScatterChart data={distanceScatter}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                                <XAxis type="number" dataKey="distance" name="Distance" stroke="#9ca3af" />
-                                <YAxis type="number" dataKey="hit" name="Hit" stroke="#9ca3af" domain={[-0.1, 1.1]} />
-                                <Tooltip cursor={{ strokeDasharray: '3 3' }} contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #374151' }} />
+                                <CartesianGrid strokeDasharray="3 3" stroke="#1e3a5f" />
+                                <XAxis type="number" dataKey="distance" name="Distance" stroke="#94a3b8" />
+                                <YAxis type="number" dataKey="hit" name="Hit" stroke="#94a3b8" domain={[-0.1, 1.1]} />
+                                <Tooltip 
+                                    cursor={{ strokeDasharray: '3 3' }} 
+                                    contentStyle={{ 
+                                        backgroundColor: '#1e293b', 
+                                        border: '1px solid #38bdf8',
+                                        borderRadius: '8px'
+                                    }} 
+                                />
                                 <Scatter name="Shots" data={distanceScatter} fill="#38bdf8">
                                     {distanceScatter.map((entry, index) => (
                                         <Cell key={`cell-${index}`} fill={entry.hit ? '#10b981' : '#ef4444'} />
@@ -242,7 +283,7 @@ export default function AnalyticsDashboard({ sessionData = null }) {
                             </ScatterChart>
                         </ResponsiveContainer>
                     ) : (
-                        <div className="h-64 flex items-center justify-center text-gray-400">
+                        <div className="h-64 flex items-center justify-center text-gray-400 bg-slate-900/30 rounded-lg">
                             No distance data available
                         </div>
                     )}
@@ -250,18 +291,45 @@ export default function AnalyticsDashboard({ sessionData = null }) {
 
                 {/* Session History - Accuracy Trend */}
                 {historyData.length > 0 && (
-                    <div className="bg-brand-surface p-4 rounded border border-gray-700 lg:col-span-2">
-                        <h3 className="text-xl font-semibold mb-4">Session History - Accuracy Trend</h3>
+                    <div className="bg-gradient-to-br from-slate-800/50 to-slate-900/50 backdrop-blur-sm p-6 rounded-xl border border-cyan-500/20 shadow-xl lg:col-span-2">
+                        <h3 className="text-xl font-semibold mb-4 text-cyan-300">Session History - Accuracy Trend</h3>
                         <ResponsiveContainer width="100%" height={300}>
                             <LineChart data={historyData}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                                <XAxis dataKey="session" stroke="#9ca3af" />
-                                <YAxis stroke="#9ca3af" />
-                                <Tooltip contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #374151' }} />
+                                <CartesianGrid strokeDasharray="3 3" stroke="#1e3a5f" />
+                                <XAxis dataKey="session" stroke="#94a3b8" />
+                                <YAxis stroke="#94a3b8" />
+                                <Tooltip 
+                                    contentStyle={{ 
+                                        backgroundColor: '#1e293b', 
+                                        border: '1px solid #38bdf8',
+                                        borderRadius: '8px'
+                                    }} 
+                                />
                                 <Legend />
-                                <Line type="monotone" dataKey="accuracy" stroke="#38bdf8" strokeWidth={2} name="Accuracy %" />
-                                <Line type="monotone" dataKey="reactionTime" stroke="#10b981" strokeWidth={2} name="Reaction Time (ms)" />
-                                <Line type="monotone" dataKey="overshoot" stroke="#ef4444" strokeWidth={2} name="Overshoot %" />
+                                <Line 
+                                    type="monotone" 
+                                    dataKey="accuracy" 
+                                    stroke="#38bdf8" 
+                                    strokeWidth={3} 
+                                    name="Accuracy %"
+                                    dot={{ fill: '#38bdf8', r: 4 }}
+                                />
+                                <Line 
+                                    type="monotone" 
+                                    dataKey="reactionTime" 
+                                    stroke="#10b981" 
+                                    strokeWidth={3} 
+                                    name="Reaction Time (ms)"
+                                    dot={{ fill: '#10b981', r: 4 }}
+                                />
+                                <Line 
+                                    type="monotone" 
+                                    dataKey="overshoot" 
+                                    stroke="#ef4444" 
+                                    strokeWidth={3} 
+                                    name="Overshoot %"
+                                    dot={{ fill: '#ef4444', r: 4 }}
+                                />
                             </LineChart>
                         </ResponsiveContainer>
                     </div>
